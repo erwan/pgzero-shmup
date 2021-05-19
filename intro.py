@@ -1,12 +1,27 @@
+from os import stat
 import pygame
-from actors import Ship
+from actors import Background, Ship
 
 WIDTH = 512
 HEIGHT = 256
 
 # Game state
-ship = Ship(pos=(50, 50))
-bullets = []
+
+
+class GameState:
+    ship = Ship(pos=(50, 50))
+    bullets = []
+    backgrounds = [
+        Background('bg/fantasy-512-x-256_006', 0, WIDTH, HEIGHT),
+        Background('bg/fantasy-512-x-256_005', 1, WIDTH, HEIGHT),
+        Background('bg/fantasy-512-x-256_004', 2, WIDTH, HEIGHT),
+        Background('bg/fantasy-512-x-256_003', 1, WIDTH, HEIGHT),
+        Background('bg/fantasy-512-x-256_002', 2, WIDTH, HEIGHT),
+        Background('bg/fantasy-512-x-256_001', 3, WIDTH, HEIGHT),
+    ]
+
+
+state = GameState()
 
 # Parameters
 speed = 4
@@ -16,38 +31,39 @@ music.play('war')
 
 
 def update():
+    # Keyboard input
     if keyboard.left:
-        ship.x -= speed
+        state.ship.x -= speed
     if keyboard.right:
-        ship.x += speed
+        state.ship.x += speed
     if keyboard.up:
-        ship.y -= speed
+        state.ship.y -= speed
     if keyboard.down:
-        ship.y += speed
-    for b in bullets:
+        state.ship.y += speed
+    # Move bullets forward
+    for b in state.bullets:
         b.x += bullet_speed
         if (b.x > WIDTH):
-            bullets.remove(b)
+            state.bullets.remove(b)
+    # Background scrolling
+    for bg in state.backgrounds:
+        bg.update()
 
 
 def on_key_down(key):
     if key == keys.SPACE:
         sounds.shot03.play()
-        bullets.append(ship.fire())
+        state.bullets.append(state.ship.fire())
     if key == keys.ESCAPE:
         exit()
 
 
 def draw():
-    #screen.surface = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    screen.surface = pygame.display.set_mode(
+        (WIDTH, HEIGHT), pygame.FULLSCREEN)
     screen.clear()
-    screen.blit('bg/fantasy-512-x-256_006', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_005', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_004', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_003', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_002', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_001', (0, 0))
-    screen.blit('bg/fantasy-512-x-256_000', (0, 0))
-    ship.draw()
-    for bullet in bullets:
+    for bg in state.backgrounds:
+        bg.draw(screen)
+    state.ship.draw()
+    for bullet in state.bullets:
         bullet.draw()
